@@ -1,0 +1,112 @@
+# Student Scores Analysis Project
+# Objective: Analyze and visualize student marks in different subjects
+
+# Step 1: Create a sample dataset of student scores
+student_data <- data.frame(
+  Student_Name = c("Alice", "Bob", "Charlie", "David", "Eva", "Frank", "Grace", "Henry", "Ivy", "Jack"),
+  Mathematics = c(85, 76, 92, 88, 79, 91, 84, 77, 89, 82),
+  Science = c(78, 82, 88, 75, 91, 85, 79, 83, 76, 90),
+  English = c(82, 79, 85, 88, 77, 84, 91, 76, 83, 89),
+  History = c(88, 75, 79, 82, 90, 77, 84, 89, 76, 83),
+  Geography = c(76, 89, 83, 90, 78, 85, 77, 82, 91, 84)
+)
+
+# Step 2: Display the dataset
+print("Student Scores Dataset:")
+print(student_data)
+# Step 3: Basic statistical analysis for each subject
+calculate_stats <- function(scores) {
+  stats <- list(
+    Mean = mean(scores),
+    Median = median(scores),
+    SD = sd(scores),
+    Min = min(scores),
+    Max = max(scores),
+    Range = max(scores) - min(scores)
+  )
+  return(stats)
+}
+# Calculate statistics for each subject
+subjects <- colnames(student_data)[-1] 
+print("\nSubject-wise Statistics:")
+for (subject in subjects) {
+  cat("\n", subject, ":\n")
+  stats <- calculate_stats(student_data[[subject]])
+  print(stats)
+}
+# Step 4: Overall performance analysis
+print("\nOverall Performance Analysis:")
+# Calculate average score for each student
+student_data$Average <- rowMeans(student_data[, -1])
+
+# Calculate overall class statistics
+overall_stats <- list(
+  Class_Mean = mean(student_data$Average),
+  Class_Median = median(student_data$Average),
+  Class_SD = sd(student_data$Average)
+)
+print(overall_stats)
+
+# Step 5: Data Visualization
+
+# Set up plotting area
+par(mfrow = c(2, 2), mar = c(5, 4, 2, 1))
+# 1. Bar plot of average scores by student
+barplot(student_data$Average, 
+        names.arg = student_data$Student_Name,
+        col = rainbow(nrow(student_data)),
+        main = "Average ScoresbyStudent",
+        xlab = "Student Name",
+        ylab = "Average Score",
+        ylim = c(0, 100),
+        las = 2)
+# 2. Boxplot of subject distributions
+boxplot(student_data[, subjects],
+        col = c("lightblue", "lightgreen", "pink", "lightyellow", "lavender"),
+        main = "Score Distribution by Subject",
+        xlab = "Subject",
+        ylab = "Score",
+        ylim = c(70, 100))
+# 3. Histogram of overall scores
+hist(student_data$Average,
+     breaks = 5,
+     col = "skyblue",
+     main = "Distribution of Average Scores",
+     xlab = "Average Score",
+     ylab = "Number of Students",
+     xlim = c(70, 100))
+# 4. Heatmap of student performance across subjects
+subject_matrix <- as.matrix(student_data[, subjects])
+rownames(subject_matrix) <- student_data$Student_Name
+
+heatmap(subject_matrix,
+        Colv = NA, Rowv = NA,
+        col = heat.colors(5),
+        scale = "none",
+        margins = c(5, 8),
+        main = "Student Performance Heatmap",
+        xlab = "Subjects",
+        ylab = "Students")
+# Reset plotting area
+par(mfrow = c(1, 1))
+
+# Step 6: Interpretation and Insights
+cat("\n\nKey Insights:\n")
+cat("1. The class average is", round(overall_stats$Class_Mean, 1), "with a standard deviation of", 
+    round(overall_stats$Class_SD, 1), "indicating", 
+    ifelse(overall_stats$Class_SD > 5, "significant", "moderate"), "variation in performance.\n")
+
+
+cat("2. The boxplot shows that", subjects[which.max(sapply(student_data[subjects], median))], 
+    "has the highest median score, while", 
+    subjects[which.min(sapply(student_data[subjects], median))], "has the lowest.\n")
+
+cat("3. The histogram reveals that most students score between", 
+    paste(round(quantile(student_data$Average, probs = c(0.25, 0.75), names = FALSE)), collapse = " and "), 
+    "points.\n")
+cat("4. The heatmap highlights", student_data$Student_Name[which.max(student_data$Average)], 
+    "as the top performer and", 
+    student_data$Student_Name[which.min(student_data$Average)], "as needing improvement.\n")
+# Save the dataset to a CSV file for future reference
+write.csv(student_data, "student_scores_dataset.csv", row.names = FALSE)
+
